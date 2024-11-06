@@ -1,0 +1,193 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+public class StudentGradeTracker {
+
+    // GUI components
+    private JFrame frame;
+    private JTextField numStudentsField;
+    private JTextArea resultArea;
+    private JButton generateButton;
+    private JButton calculateButton;
+    private ArrayList<JTextField> gradeFields;
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new StudentGradeTrackerGUI().createAndShowGUI();
+            }
+        });
+    }
+
+    // Method to create and display the GUI
+    public void createAndShowGUI() {
+        // Create a frame (window)
+        frame = new JFrame("Student Grade Tracker");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(500, 600);
+        frame.setLayout(new BorderLayout());
+
+        // Set gradient background for frame
+        frame.getContentPane().setBackground(new Color(255, 255, 255)); // White Background
+        GradientPaint gradient = new GradientPaint(0, 0, new Color(70, 130, 180), 0, 500, new Color(0, 123, 255));
+        frame.getGraphics().setColor(new Color(70, 130, 180)); // Set gradient as background
+
+        // Panel for input fields
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new GridLayout(0, 2, 10, 10));
+        inputPanel.setBackground(new Color(255, 255, 255)); // White background
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Label and text field for number of students
+        JLabel numStudentsLabel = new JLabel("Enter number of students:");
+        numStudentsLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        numStudentsLabel.setForeground(new Color(0, 0, 0)); // Dark text for labels
+
+        numStudentsField = new JTextField();
+        numStudentsField.setFont(new Font("Arial", Font.PLAIN, 14));
+        numStudentsField.setPreferredSize(new Dimension(100, 30));
+        numStudentsField.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
+
+        inputPanel.add(numStudentsLabel);
+        inputPanel.add(numStudentsField);
+
+        // Panel to hold grade input fields (Initially empty)
+        JPanel gradePanel = new JPanel();
+        gradePanel.setLayout(new BoxLayout(gradePanel, BoxLayout.Y_AXIS));
+        gradePanel.setBackground(new Color(255, 255, 255)); // White background
+
+        // Button to generate grade input fields
+        generateButton = new JButton("Generate Grade Inputs");
+        generateButton.setFont(new Font("Arial", Font.BOLD, 16));
+        generateButton.setBackground(new Color(0, 123, 255)); // Blue background
+        generateButton.setForeground(Color.WHITE);
+        generateButton.setFocusPainted(false);
+        generateButton.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        generateButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        generateButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                generateGradeInputs();
+            }
+        });
+
+        // Button to calculate and show results
+        calculateButton = new JButton("Calculate Results");
+        calculateButton.setFont(new Font("Arial", Font.BOLD, 16));
+        calculateButton.setBackground(new Color(40, 167, 69)); // Green background
+        calculateButton.setForeground(Color.WHITE);
+        calculateButton.setFocusPainted(false);
+        calculateButton.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        calculateButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        calculateButton.setEnabled(false);  // Initially, it's disabled
+
+        // Text area to display the results
+        resultArea = new JTextArea();
+        resultArea.setEditable(false);
+        resultArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        resultArea.setBackground(new Color(255, 255, 255)); // White background for text area
+        resultArea.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
+        JScrollPane resultScrollPane = new JScrollPane(resultArea);
+
+        // Adding components to the frame
+        frame.add(inputPanel, BorderLayout.NORTH);
+        frame.add(gradePanel, BorderLayout.CENTER);
+        frame.add(generateButton, BorderLayout.SOUTH);
+        frame.add(calculateButton, BorderLayout.SOUTH);
+        frame.add(resultScrollPane, BorderLayout.EAST);
+
+        // Show the frame
+        frame.setVisible(true);
+    }
+
+    // Method to generate input fields for grades based on number of students
+    private void generateGradeInputs() {
+        try {
+            int numOfStudents = Integer.parseInt(numStudentsField.getText().trim());
+
+            if (numOfStudents <= 0) {
+                JOptionPane.showMessageDialog(frame, "Number of students must be greater than 0.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Dynamically create input fields for each student's grade
+            gradeFields = new ArrayList<>();
+            JPanel gradePanel = new JPanel();
+            gradePanel.setLayout(new BoxLayout(gradePanel, BoxLayout.Y_AXIS));
+            gradePanel.setBackground(new Color(255, 255, 255)); // White background
+
+            for (int i = 0; i < numOfStudents; i++) {
+                JLabel gradeLabel = new JLabel("Enter grade for student " + (i + 1) + ":");
+                gradeLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                gradeLabel.setForeground(new Color(0, 0, 0)); // Dark text for labels
+
+                JTextField gradeField = new JTextField(5);
+                gradeField.setFont(new Font("Arial", Font.PLAIN, 14));
+                gradeField.setPreferredSize(new Dimension(100, 30));
+                gradeField.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100)));
+                gradeFields.add(gradeField);
+
+                gradePanel.add(gradeLabel);
+                gradePanel.add(gradeField);
+            }
+
+            // Repaint to update the grade fields
+            frame.getContentPane().remove(1); // Remove the existing panel
+            frame.getContentPane().add(gradePanel, BorderLayout.CENTER);  // Add new grade panel
+            frame.revalidate();
+            frame.repaint();
+
+            // Enable the calculate button after grade inputs are generated
+            generateButton.setEnabled(false);  // Disable the generate button
+            calculateButton.setEnabled(true);  // Enable the calculate button
+            calculateButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    calculateAndDisplayResults(numOfStudents);
+                }
+            });
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(frame, "Please enter a valid number.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method to calculate the results (average, highest, lowest grades)
+    private void calculateAndDisplayResults(int numOfStudents) {
+        try {
+            ArrayList<Integer> grades = new ArrayList<>();
+            for (JTextField field : gradeFields) {
+                int grade = Integer.parseInt(field.getText().trim());
+                grades.add(grade);
+            }
+
+            // Calculate the average, highest and lowest grade
+            int highestGrade = grades.get(0);
+            int lowestGrade = grades.get(0);
+            int sum = 0;
+
+            for (int grade : grades) {
+                if (grade > highestGrade) {
+                    highestGrade = grade;
+                }
+                if (grade < lowestGrade) {
+                    lowestGrade = grade;
+                }
+                sum += grade;
+            }
+
+            double average = (double) sum / numOfStudents;
+
+            // Display the results in the text area
+            resultArea.setText("Student Grade Report\n");
+            resultArea.append("-------------------------\n");
+            resultArea.append("Average Grade: " + String.format("%.2f", average) + "\n");
+            resultArea.append("Highest Grade: " + highestGrade + "\n");
+            resultArea.append("Lowest Grade: " + lowestGrade + "\n");
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(frame, "Please enter valid grades for all students.", "Invalid Grade", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
